@@ -1,9 +1,11 @@
 package ro.pub.cs.systems.pdsd.lab06.clientservercommunication.views;
 
+import java.io.BufferedReader;
 import java.net.Socket;
 
 import ro.pub.cs.systems.pdsd.lab06.clientservercommunication.R;
 import ro.pub.cs.systems.pdsd.lab06.clientservercommunication.general.Constants;
+import ro.pub.cs.systems.pdsd.lab06.clientservercommunication.general.Utilities;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,6 +36,38 @@ public class ClientFragment extends Fragment {
 				// - get the BufferedReader object in order to read from the socket (use Utilities.getReader())
 				// - while the line that was read is not null (EOF was not sent), append the content to serverMessageTextView (on UI thread !!!)
 				// - close the socket to the server	
+				serverMessageTextView.post(new Runnable() {
+					@Override
+					public void run() {
+						serverMessageTextView.setText("");
+					}
+				});
+				String address = serverAddressEditText.getText().toString();
+				String port = serverPortEditText.getText().toString();
+				Socket socket = new Socket(address, Integer.valueOf(port));
+				
+				BufferedReader reader = Utilities.getReader(socket);
+				
+				while(true){
+					String line = reader.readLine();
+					
+					if (line == null) break;
+					
+					final String text = line;
+					
+					serverMessageTextView.post(new Runnable() {
+						
+						@Override
+						public void run() {
+							// TODO Auto-generated method stub
+							serverMessageTextView.append(text);
+							
+						}
+					});
+					
+				}
+				
+				socket.close();
 
 			} catch (Exception exception) {
 				Log.e(Constants.TAG, "An exception has occurred: "+exception.getMessage());
